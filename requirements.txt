@@ -1,0 +1,69 @@
+# ─── Core Web Framework ───────────────────────────────────────────────────────
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+websockets==13.0
+aiofiles==24.1.0
+
+# ─── Database ─────────────────────────────────────────────────────────────────
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.29.0
+alembic==1.13.3
+pgvector==0.3.5
+redis[asyncio]==5.1.1
+
+# ─── Authentication ───────────────────────────────────────────────────────────
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# ─── Voice AI Pipeline ────────────────────────────────────────────────────────
+# Pipecat: purpose-built voice agent orchestration framework
+pipecat-ai[deepgram,silero,anthropic]==0.0.52
+
+# ─── AI / LLM APIs ────────────────────────────────────────────────────────────
+anthropic==0.34.2           # Claude Sonnet (LLM brain)
+deepgram-sdk==3.7.4         # Deepgram Nova-2 (English STT)
+sarvamai==0.1.0             # Sarvam AI Saarika (Indian STT) + Bulbul (TTS)
+
+# ─── RAG / Document Processing ────────────────────────────────────────────────
+sentence-transformers==3.1.1  # Local embeddings (all-MiniLM-L6-v2)
+pypdf==5.0.1                  # PDF parsing
+python-docx==1.1.2            # DOCX parsing
+numpy==1.26.4
+
+# ─── Telephony ────────────────────────────────────────────────────────────────
+twilio==9.3.2
+httpx==0.27.2
+
+# ─── Background Tasks ─────────────────────────────────────────────────────────
+celery[redis]==5.4.0
+
+# ─── Billing ──────────────────────────────────────────────────────────────────
+razorpay==1.4.2
+
+# ─── Google Calendar ──────────────────────────────────────────────────────────
+google-api-python-client==2.151.0
+google-auth==2.35.0
+google-auth-httplib2==0.2.0
+
+# ─── Email ────────────────────────────────────────────────────────────────────
+resend==0.8.0
+
+# ─── Cloud Storage (Cloudflare R2 via S3-compatible API) ─────────────────────
+boto3==1.35.36
+
+# ─── Error Tracking ───────────────────────────────────────────────────────────
+sentry-sdk[fastapi]==2.5.1
+
+# ─── Config & Utilities ───────────────────────────────────────────────────────
+pydantic[email]==2.9.2
+pydantic-settings==2.5.2
+python-dotenv==1.0.1
+structlog==24.4.0
+tenacity==9.0.0
+python-magic==0.4.27
+
+# ─── Testing ──────────────────────────────────────────────────────────────────
+pytest==8.3.3
+pytest-asyncio==0.24.0
+aiosqlite==0.20.0

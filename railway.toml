@@ -1,0 +1,32 @@
+# Railway configuration for the VaaniAI FastAPI backend
+# Docs: https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Railway injects $PORT automatically — uvicorn must bind to it
+startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# ---------------------------------------------------------------------------
+# Environment variables are set per-service in the Railway dashboard.
+# Reference .env.example for the full list.
+#
+# Required at minimum:
+#   DATABASE_URL          = from Railway PostgreSQL plugin
+#   REDIS_URL             = from Railway Redis plugin
+#   SECRET_KEY            = openssl rand -hex 32
+#   ANTHROPIC_API_KEY
+#   SARVAM_API_KEY
+#   EXOTEL_API_KEY / EXOTEL_API_TOKEN / EXOTEL_ACCOUNT_SID
+#   RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET
+#   CLOUDFLARE_R2_ACCESS_KEY / R2_SECRET_KEY / R2_BUCKET / R2_ENDPOINT
+#   WHATSAPP_ACCESS_TOKEN / WHATSAPP_PHONE_NUMBER_ID
+#   RESEND_API_KEY
+#   OWNER_EMAIL / OWNER_PASSWORD_HASH
+# ---------------------------------------------------------------------------
