@@ -19,6 +19,7 @@ passlib[bcrypt]==1.7.4
 # ─── Voice AI Pipeline ────────────────────────────────────────────────────────
 # pipecat-ai[deepgram,anthropic,openai]==0.0.52 is pre-installed in Dockerfile
 # Step 5 — DO NOT list it here, pip would re-resolve its extras and conflict.
+onnxruntime                 # Required by pipecat SileroVAD (CPU inference, ~8MB — NOT GPU torch)
 
 # ─── AI / LLM APIs ────────────────────────────────────────────────────────────
 # openai, anthropic, deepgram-sdk all installed by pipecat Dockerfile step — not listed here
