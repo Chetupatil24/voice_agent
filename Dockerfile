@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 # openai extra required by OpenAILLMContext (used in pipeline.py)
 RUN pip install --no-cache-dir "pipecat-ai[deepgram,anthropic,openai]==0.0.52"
 
+# ── Step 2b: openai explicit install (pipecat extras can be skipped by cache) ─
+RUN pip install --no-cache-dir "openai>=1.0.0"
+
 # ── Step 3: Remaining app dependencies (reuse pipecat's resolved versions) ────
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
