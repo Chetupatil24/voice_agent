@@ -22,8 +22,8 @@ passlib[bcrypt]==1.7.4
 pipecat-ai[deepgram,anthropic]==0.0.52
 
 # ─── AI / LLM APIs ────────────────────────────────────────────────────────────
-anthropic==0.34.2           # Claude Sonnet (LLM brain)
-deepgram-sdk==3.7.4         # Deepgram Nova-2 (English STT)
+anthropic==0.40.0           # pipecat-ai requires ~=0.40.0
+deepgram-sdk==3.7.7         # pipecat-ai requires ~=3.7.7
 sarvamai==0.1.0             # Sarvam AI Saarika (Indian STT) + Bulbul (TTS)
 
 # ─── RAG / Document Processing ────────────────────────────────────────────────
