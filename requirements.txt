@@ -18,7 +18,8 @@ passlib[bcrypt]==1.7.4
 
 # ─── Voice AI Pipeline ────────────────────────────────────────────────────────
 # Pipecat: purpose-built voice agent orchestration framework
-pipecat-ai[deepgram,silero,anthropic]==0.0.52
+# silero removed — it pulls GPU torch; using CPU torch installed in Dockerfile
+pipecat-ai[deepgram,anthropic]==0.0.52
 
 # ─── AI / LLM APIs ────────────────────────────────────────────────────────────
 anthropic==0.34.2           # Claude Sonnet (LLM brain)
