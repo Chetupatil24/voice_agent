@@ -15,7 +15,8 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 
 # ── Step 2: pipecat-ai FIRST so it resolves its own strict deps ───────────────
 # (anthropic~=0.40.0, deepgram~=3.7.7, pydantic~=2.10.3, numpy~=2.1.3)
-RUN pip install --no-cache-dir "pipecat-ai[deepgram,anthropic]==0.0.52"
+# openai extra required by OpenAILLMContext (used in pipeline.py)
+RUN pip install --no-cache-dir "pipecat-ai[deepgram,anthropic,openai]==0.0.52"
 
 # ── Step 3: Remaining app dependencies (reuse pipecat's resolved versions) ────
 COPY requirements.txt .
