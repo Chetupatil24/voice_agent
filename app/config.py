@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import List
 
-from pydantic import AnyHttpUrl
+from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -89,6 +89,16 @@ class Settings(BaseSettings):
     # ── Sentry (error tracking) ────────────────────────────────────────────────
     SENTRY_DSN: str = ""
     SENTRY_ENVIRONMENT: str = "production"
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def fix_db_scheme(cls, v: str) -> str:
+        # Railway injects postgresql:// but asyncpg requires postgresql+asyncpg://
+        if v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql+asyncpg://", 1)
+        return v
 
 
 @lru_cache()
