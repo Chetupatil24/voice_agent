@@ -10,11 +10,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install CPU-only PyTorch first — prevents pip from pulling the 2 GB GPU wheel
-# when sentence-transformers (RAG embeddings) is installed below.
+# ── Step 1: CPU-only PyTorch (prevents 2 GB GPU wheel download) ───────────────
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-# Install remaining Python dependencies
+# ── Step 2: pipecat-ai FIRST so it resolves its own strict deps ───────────────
+# (anthropic~=0.40.0, deepgram~=3.7.7, pydantic~=2.10.3, numpy~=2.1.3)
+RUN pip install --no-cache-dir "pipecat-ai[deepgram,anthropic]==0.0.52"
+
+# ── Step 3: Remaining app dependencies (reuse pipecat's resolved versions) ────
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

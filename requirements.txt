@@ -17,13 +17,13 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
 # ─── Voice AI Pipeline ────────────────────────────────────────────────────────
-# Pipecat: purpose-built voice agent orchestration framework
-# silero removed — it pulls GPU torch; using CPU torch installed in Dockerfile
+# pipecat-ai is pre-installed in Dockerfile Step 2 with its own dep resolver.
+# Listed here only so it appears in the dependency manifest.
 pipecat-ai[deepgram,anthropic]==0.0.52
 
 # ─── AI / LLM APIs ────────────────────────────────────────────────────────────
-anthropic==0.40.0           # pipecat-ai requires ~=0.40.0
-deepgram-sdk==3.7.7         # pipecat-ai requires ~=3.7.7
+# ─── AI / LLM APIs ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# anthropic and deepgram-sdk are pinned by pipecat-ai in Dockerfile Step 2 — not listed here to avoid conflicts
 sarvamai==0.1.0             # Sarvam AI Saarika (Indian STT) + Bulbul (TTS)
 
 # ─── RAG / Document Processing ────────────────────────────────────────────────
