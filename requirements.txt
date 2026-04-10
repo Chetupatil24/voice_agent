@@ -22,8 +22,8 @@ passlib[bcrypt]==1.7.4
 pipecat-ai[deepgram,anthropic,openai]==0.0.52
 
 # ─── AI / LLM APIs ────────────────────────────────────────────────────────────
-# ─── AI / LLM APIs ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 # anthropic and deepgram-sdk are pinned by pipecat-ai in Dockerfile Step 2 — not listed here to avoid conflicts
+openai>=1.0.0               # Required by pipecat OpenAILLMContext (imported at module level)
 sarvamai==0.1.0             # Sarvam AI Saarika (Indian STT) + Bulbul (TTS)
 
 # ─── RAG / Document Processing ────────────────────────────────────────────────
