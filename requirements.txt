@@ -29,7 +29,7 @@ sarvamai==0.1.0             # Sarvam AI Saarika (Indian STT) + Bulbul (TTS)
 sentence-transformers==3.1.1  # Local embeddings (all-MiniLM-L6-v2)
 pypdf==5.0.1                  # PDF parsing
 python-docx==1.1.2            # DOCX parsing
-# numpy pinned by pipecat-ai~=2.1.3 — do not pin separately
+# numpy resolved by pipecat-ai (requires ~=2.1.3) — not pinned here
 
 # ─── Telephony ────────────────────────────────────────────────────────────────
 twilio==9.3.2
