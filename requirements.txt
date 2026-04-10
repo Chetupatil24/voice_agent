@@ -17,13 +17,11 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
 # ─── Voice AI Pipeline ────────────────────────────────────────────────────────
-# pipecat-ai is pre-installed in Dockerfile Step 2 with its own dep resolver.
-# Listed here only so it appears in the dependency manifest.
-pipecat-ai[deepgram,anthropic,openai]==0.0.52
+# pipecat-ai[deepgram,anthropic,openai]==0.0.52 is pre-installed in Dockerfile
+# Step 5 — DO NOT list it here, pip would re-resolve its extras and conflict.
 
 # ─── AI / LLM APIs ────────────────────────────────────────────────────────────
-# anthropic and deepgram-sdk are pinned by pipecat-ai in Dockerfile Step 2 — not listed here to avoid conflicts
-openai>=1.0.0               # Required by pipecat OpenAILLMContext (imported at module level)
+# openai, anthropic, deepgram-sdk all installed by pipecat Dockerfile step — not listed here
 sarvamai==0.1.0             # Sarvam AI Saarika (Indian STT) + Bulbul (TTS)
 
 # ─── RAG / Document Processing ────────────────────────────────────────────────
