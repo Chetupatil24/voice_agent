@@ -1,326 +1,129 @@
 "use client";
-
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Sidebar } from "@/components/Sidebar";
-import { getAppointments, createAppointment, updateAppointment, cancelAppointment, type AppointmentCreate } from "@/lib/api";
-import { getTenantId, formatDateTime, cn } from "@/lib/utils";
+import { TopNav } from "@/components/TopNav";
 
-const STATUS_COLORS: Record<string, string> = {
-  scheduled: "bg-secondary/10 text-secondary",
-  confirmed: "bg-primary/10 text-primary",
-  cancelled: "bg-error/10 text-error",
-  completed: "bg-surface-container-high text-on-surface-variant",
-  no_show: "bg-tertiary/10 text-tertiary",
-  rescheduled: "bg-tertiary/10 text-tertiary",
+const statusStyle: Record<string,{bg:string;color:string}> = {
+  Confirmed: { bg:"rgba(70,241,197,0.1)",  color:"#46f1c5" },
+  Pending:   { bg:"rgba(255,206,166,0.1)", color:"#ffcea6" },
+  Cancelled: { bg:"rgba(255,180,171,0.1)", color:"#ffb4ab" },
 };
 
-const schema = z.object({
-  customer_name: z.string().min(2),
-  customer_phone: z.string().min(6),
-  customer_email: z.string().email().optional().or(z.literal("")),
-  title: z.string().min(2),
-  notes: z.string().optional(),
-  scheduled_at: z.string().min(1, "Required"),
-  duration_minutes: z.coerce.number().int().min(5).default(30),
-});
-
-type FormData = z.infer<typeof schema>;
-
-const mockItems = [
-  { id: 1, customer_name: "Ravi Kumar", customer_phone: "+91 98765 43210", title: "Dental Checkup", scheduled_at: new Date(Date.now() + 86400000).toISOString(), duration_minutes: 30, status: "confirmed", agent: "Priya AI" },
-  { id: 2, customer_name: "Priya Sharma", customer_phone: "+91 87654 32109", title: "Follow-up Consultation", scheduled_at: new Date(Date.now() + 172800000).toISOString(), duration_minutes: 20, status: "scheduled", agent: "Priya AI" },
-  { id: 3, customer_name: "Amit Singh", customer_phone: "+91 76543 21098", title: "Root Canal", scheduled_at: new Date(Date.now() + 259200000).toISOString(), duration_minutes: 60, status: "confirmed", agent: "Priya AI" },
-  { id: 4, customer_name: "Neha Gupta", customer_phone: "+91 65432 10987", title: "Cleaning", scheduled_at: new Date(Date.now() - 86400000).toISOString(), duration_minutes: 30, status: "cancelled", agent: "Priya AI" },
-  { id: 5, customer_name: "Vikram Patel", customer_phone: "+91 54321 09876", title: "Teeth Whitening", scheduled_at: new Date(Date.now() - 172800000).toISOString(), duration_minutes: 45, status: "completed", agent: "Priya AI" },
+const appts = [
+  { id:"a1", name:"Ramesh Kumar",  time:"10:00 AM", date:"Today",      service:"Consultation",      status:"Confirmed", phone:"+91 98765 43210", note:"First-time patient" },
+  { id:"a2", name:"Priya Nair",    time:"11:30 AM", date:"Today",      service:"Annual Check-up",   status:"Confirmed", phone:"+91 76543 21098", note:"Preferred morning slot" },
+  { id:"a3", name:"Anjali Desai",  time:"02:00 PM", date:"Today",      service:"Follow-up",         status:"Pending",   phone:"+91 54321 09876", note:"Review test results" },
+  { id:"a4", name:"Vikram Singh",  time:"09:00 AM", date:"Tomorrow",   service:"Consultation",      status:"Confirmed", phone:"+91 65432 10987", note:"Insurance pre-auth needed" },
+  { id:"a5", name:"Meera Iyer",    time:"01:00 PM", date:"Tomorrow",   service:"Dental Cleaning",   status:"Confirmed", phone:"+91 32109 87654", note:"" },
+  { id:"a6", name:"Suresh Patil",  time:"03:30 PM", date:"Tomorrow",   service:"X-Ray",             status:"Pending",   phone:"+91 43210 98765", note:"Bring prior images" },
+  { id:"a7", name:"Kavya Reddy",   time:"10:30 AM", date:"Thu, Jul 24",service:"Consultation",      status:"Confirmed", phone:"+91 91234 56780", note:"New patient registration" },
+  { id:"a8", name:"Arjun Menon",   time:"04:00 PM", date:"Thu, Jul 24",service:"surgery follow-up", status:"Cancelled", phone:"+91 80123 45679", note:"Patient requested cancellation" },
 ];
 
 export default function AppointmentsPage() {
-  const tenantId = getTenantId();
-  const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Record<string, unknown> | null>(null);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [search, setSearch] = useState("");
-  const [showProTip, setShowProTip] = useState(true);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["appointments", tenantId],
-    queryFn: () => getAppointments(tenantId, { limit: 50 }),
-    enabled: !!tenantId,
-  });
-
-  const items: Record<string, unknown>[] = data?.items ?? [];
-  const displayItems = items.length > 0 ? items : mockItems;
-
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) });
-
-  const createMut = useMutation({
-    mutationFn: (d: AppointmentCreate) => createAppointment(tenantId, d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["appointments", tenantId] }); setOpen(false); reset(); },
-  });
-
-  const updateMut = useMutation({
-    mutationFn: ({ id, d }: { id: string; d: Partial<FormData> }) => updateAppointment(tenantId, id, d),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["appointments", tenantId] }); setEditing(null); reset(); },
-  });
-
-  const cancelMut = useMutation({
-    mutationFn: (id: string) => cancelAppointment(tenantId, id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["appointments", tenantId] }),
-  });
-
-  const onSubmit = async (d: FormData) => {
-    if (editing) {
-      await updateMut.mutateAsync({ id: String(editing.id), d });
-    } else {
-      await createMut.mutateAsync({ ...d, customer_email: d.customer_email || undefined, notes: d.notes || undefined });
-    }
-  };
-
-  const openEdit = (item: Record<string, unknown>) => {
-    setEditing(item);
-    reset({
-      customer_name: String(item.customer_name ?? ""),
-      customer_phone: String(item.customer_phone ?? ""),
-      customer_email: String(item.customer_email ?? ""),
-      title: String(item.title ?? ""),
-      notes: String(item.notes ?? ""),
-      scheduled_at: item.scheduled_at ? String(item.scheduled_at).slice(0, 16) : "",
-      duration_minutes: Number(item.duration_minutes ?? 30),
-    });
-    setOpen(true);
-  };
-
-  const filtered = displayItems.filter(item => {
-    const matchStatus = statusFilter === "all" || String(item.status) === statusFilter;
-    const matchSearch = !search || String(item.customer_name ?? "").toLowerCase().includes(search.toLowerCase()) || String(item.customer_phone ?? "").includes(search);
-    return matchStatus && matchSearch;
-  });
-
-  const stats = [
-    { label: "Total Booked", value: data?.total ?? 1284, icon: "calendar_month", color: "text-primary", bg: "bg-primary/10" },
-    { label: "Confirmed", value: displayItems.filter(i => String(i.status) === "confirmed").length || 856, icon: "check_circle", color: "text-secondary", bg: "bg-secondary/10" },
-    { label: "Pending", value: displayItems.filter(i => String(i.status) === "scheduled").length || 312, icon: "schedule", color: "text-tertiary", bg: "bg-tertiary/10" },
-    { label: "Cancelled", value: displayItems.filter(i => String(i.status) === "cancelled").length || 116, icon: "cancel", color: "text-error", bg: "bg-error/10" },
-  ];
+  const [selected, setSelected] = useState<typeof appts[0] | null>(null);
+  const days = ["Today","Tomorrow","Thu, Jul 24"];
+  const count = (d:string) => appts.filter(a=>a.date===d).length;
 
   return (
-    <div className="flex min-h-screen bg-surface">
+    <div className="flex min-h-screen" style={{ background:"#0a0d14" }}>
       <Sidebar />
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10">
-          <div>
-            <h1 className="text-xl font-headline font-bold text-on-surface">Appointments Manager</h1>
-            <p className="text-xs text-on-surface-variant">{data?.total ?? displayItems.length} total appointments</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-bold text-primary">Live Sync Active</span>
+      <div className="flex-1 ml-64">
+        <TopNav breadcrumb="Appointments" />
+        <main className="pt-16 p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-headline font-black text-on-surface">Appointments</h1>
+              <p className="text-on-surface-variant text-sm mt-0.5">AI-booked and manually scheduled appointments.</p>
             </div>
-            <button className="flex items-center gap-2 px-3 py-2 rounded-xl border border-outline-variant/20 text-on-surface-variant text-sm font-bold hover:bg-surface-container transition-all">
-              <span className="material-symbols-outlined text-lg">sync</span>
-              Sync Calendar
-            </button>
-            <button onClick={() => { setEditing(null); reset(); setOpen(true); }}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-primary to-primary-container text-on-primary rounded-xl text-sm font-bold hover:opacity-90 transition-all">
-              <span className="material-symbols-outlined text-lg">add</span>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm text-on-primary transition-transform hover:scale-105" style={{ background:"linear-gradient(135deg,#46f1c5,#00d4aa)" }}>
+              <span className="material-symbols-outlined text-base" style={{ fontVariationSettings:"'FILL' 1" }}>add</span>
               New Appointment
             </button>
           </div>
-        </header>
 
-        <main className="flex-1 p-6 overflow-y-auto space-y-6">
-          {/* Stats bento */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map(s => (
-              <div key={s.label} className="bg-surface-container-low rounded-2xl p-5 border border-outline-variant/5 hover:bg-surface-container transition-all">
-                <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center mb-3`}>
-                  <span className={`material-symbols-outlined text-xl ${s.color}`} style={{ fontVariationSettings: "'FILL' 1" }}>{s.icon}</span>
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label:"Total This Week", value:"52",  icon:"calendar_month", color:"#c7bfff" },
+              { label:"Today",           value:"3",   icon:"today",          color:"#46f1c5" },
+              { label:"Pending",         value:"6",   icon:"pending",        color:"#ffcea6" },
+              { label:"Cancellation %",  value:"4.2%",icon:"cancel",         color:"#ffb4ab" },
+            ].map(s => (
+              <div key={s.label} className="rounded-2xl p-4 flex items-center gap-3" style={{ background:"rgba(24,28,36,0.8)", border:"1px solid rgba(255,255,255,0.05)" }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background:`${s.color}18` }}>
+                  <span className="material-symbols-outlined text-xl" style={{ color:s.color, fontVariationSettings:"'FILL' 1" }}>{s.icon}</span>
                 </div>
-                <p className={`text-3xl font-headline font-bold text-on-surface`}>{s.value.toLocaleString()}</p>
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mt-1">{s.label}</p>
+                <div>
+                  <p className="text-xl font-headline font-black text-on-surface">{s.value}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">{s.label}</p>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Filter bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">search</span>
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search patient..."
-                  className="pl-10 pr-4 py-2 text-sm rounded-xl bg-surface-container-low border border-outline-variant/30 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-1 focus:ring-primary w-48" />
-              </div>
-              <div className="flex gap-1 p-1 bg-surface-container-low rounded-xl border border-outline-variant/10">
-                <button className="p-1.5 rounded-lg bg-surface text-on-surface">
-                  <span className="material-symbols-outlined text-lg">view_list</span>
-                </button>
-                <button className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface transition-all">
-                  <span className="material-symbols-outlined text-lg">calendar_view_month</span>
-                </button>
-              </div>
-            </div>
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-              className="px-4 py-2 text-sm rounded-xl bg-surface-container-low border border-outline-variant/30 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
-              {["all", "confirmed", "scheduled", "cancelled", "completed"].map(s => (
-                <option key={s} value={s}>{s === "all" ? "All Status" : s.charAt(0).toUpperCase() + s.slice(1)}</option>
+          <div className="flex gap-6">
+            {/* Day columns */}
+            <div className="flex-1 space-y-6">
+              {days.map(day => (
+                <div key={day}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <h2 className="font-headline font-black text-on-surface">{day}</h2>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background:"rgba(70,241,197,0.1)", color:"#46f1c5" }}>{count(day)} appts</span>
+                  </div>
+                  <div className="space-y-2">
+                    {appts.filter(a=>a.date===day).map(a => (
+                      <div key={a.id} className="rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all hover:scale-[1.01]" style={{ background:"rgba(24,28,36,0.8)", border:`1px solid ${selected?.id===a.id?"rgba(70,241,197,0.2)":"rgba(255,255,255,0.05)"}` }} onClick={()=>setSelected(selected?.id===a.id?null:a)}>
+                        <div className="text-right flex-shrink-0 w-16">
+                          <p className="font-bold text-sm font-mono" style={{ color:"#46f1c5" }}>{a.time}</p>
+                        </div>
+                        <div className="w-px h-10 flex-shrink-0" style={{ background:"rgba(255,255,255,0.08)" }} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-on-surface">{a.name}</p>
+                          <p className="text-xs text-on-surface-variant">{a.service}</p>
+                        </div>
+                        <span className="text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0" style={statusStyle[a.status]}>{a.status}</span>
+                        {a.note && <span className="material-symbols-outlined text-sm text-on-surface-variant flex-shrink-0" title={a.note}>note</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ))}
-            </select>
-          </div>
-
-          {/* Table */}
-          <div className="bg-surface-container-low rounded-2xl border border-outline-variant/5 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-outline-variant/10">
-                    <th className="text-left px-6 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Customer</th>
-                    <th className="text-left px-6 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Schedule</th>
-                    <th className="text-left px-6 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">AI Agent</th>
-                    <th className="text-left px-6 py-3 text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Status</th>
-                    <th className="px-6 py-3" />
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/5">
-                  {isLoading
-                    ? Array.from({ length: 5 }).map((_, i) => (
-                        <tr key={i}>
-                          {Array.from({ length: 5 }).map((_, j) => (
-                            <td key={j} className="px-6 py-4"><div className="h-4 bg-surface-container-high animate-pulse rounded" /></td>
-                          ))}
-                        </tr>
-                      ))
-                    : filtered.map((item, idx) => (
-                        <tr key={String(item.id ?? idx)} className="hover:bg-surface-container/40 transition-colors group">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-on-primary text-sm font-bold flex-shrink-0">
-                                {String(item.customer_name ?? "?")[0]}
-                              </div>
-                              <div>
-                                <p className="font-bold text-on-surface">{String(item.customer_name ?? "—")}</p>
-                                <p className="text-xs text-on-surface-variant">{String(item.customer_phone ?? "")}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <p className="text-on-surface font-bold text-sm">{String(item.title ?? "—")}</p>
-                            <p className="text-xs text-on-surface-variant">
-                              {item.scheduled_at ? formatDateTime(String(item.scheduled_at)) : "—"}
-                              {item.duration_minutes ? ` · ${item.duration_minutes}m` : ""}
-                            </p>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="text-xs text-on-surface-variant">{String((item as Record<string, unknown>).agent ?? "Priya AI")}</span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={cn("px-3 py-1 rounded-full text-xs font-bold", STATUS_COLORS[String(item.status)] ?? "bg-surface-container text-on-surface-variant")}>
-                              {String(item.status ?? "—").charAt(0).toUpperCase() + String(item.status ?? "").slice(1)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                              <button onClick={() => openEdit(item)} className="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-primary transition-all">
-                                <span className="material-symbols-outlined text-lg">edit</span>
-                              </button>
-                              <button onClick={() => cancelMut.mutate(String(item.id))} disabled={item.status === "cancelled"}
-                                className="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error disabled:opacity-30 transition-all">
-                                <span className="material-symbols-outlined text-lg">cancel</span>
-                              </button>
-                              <a href={`/transcripts?call=${item.id}`} className="p-1.5 rounded-lg hover:bg-surface-container-high text-on-surface-variant hover:text-secondary transition-all">
-                                <span className="material-symbols-outlined text-lg">transcribe</span>
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                </tbody>
-              </table>
             </div>
+
+            {/* Detail panel */}
+            {selected && (
+              <div className="w-72 flex-shrink-0 rounded-2xl p-5 space-y-4 h-fit sticky top-24" style={{ background:"rgba(24,28,36,0.9)", border:"1px solid rgba(255,255,255,0.07)" }}>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-headline font-bold text-on-surface">Appointment</h3>
+                  <button onClick={()=>setSelected(null)} className="text-on-surface-variant hover:text-on-surface"><span className="material-symbols-outlined">close</span></button>
+                </div>
+                <div>
+                  <p className="font-bold text-on-surface text-lg">{selected.name}</p>
+                  <p className="text-xs text-on-surface-variant font-mono">{selected.phone}</p>
+                </div>
+                <span className="inline-block text-xs font-bold px-3 py-1 rounded-full" style={statusStyle[selected.status]}>{selected.status}</span>
+                <div className="space-y-2">
+                  {[["Date", selected.date],["Time", selected.time],["Service", selected.service]].map(([k,v]) => (
+                    <div key={k} className="flex justify-between py-1.5" style={{ borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
+                      <span className="text-xs text-on-surface-variant uppercase tracking-widest font-bold">{k}</span>
+                      <span className="text-sm font-bold text-on-surface">{v}</span>
+                    </div>
+                  ))}
+                </div>
+                {selected.note && <div className="p-3 rounded-xl" style={{ background:"rgba(255,255,255,0.03)" }}>
+                  <p className="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold mb-1">Note</p>
+                  <p className="text-sm text-on-surface">{selected.note}</p>
+                </div>}
+                <div className="flex flex-col gap-2">
+                  <button className="py-2 rounded-xl text-sm font-bold text-on-primary" style={{ background:"linear-gradient(135deg,#46f1c5,#00d4aa)" }}>Edit Appointment</button>
+                  <button className="py-2 rounded-xl text-sm font-bold" style={{ color:"#ffb4ab", background:"rgba(255,180,171,0.08)", border:"1px solid rgba(255,180,171,0.15)" }}>Cancel</button>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>
-
-      {/* Modal */}
-      {open && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className="w-full max-w-lg bg-surface-container rounded-2xl border border-outline-variant/20 shadow-2xl p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-headline font-bold text-on-surface">{editing ? "Edit Appointment" : "Book Appointment"}</h2>
-              <button onClick={() => { setOpen(false); setEditing(null); }} className="text-on-surface-variant hover:text-on-surface transition-colors">
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1.5 block">Customer Name *</label>
-                  <input {...register("customer_name")} className="w-full px-3 py-2.5 text-sm rounded-xl border border-outline-variant/30 bg-surface-container-low text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" />
-                  {errors.customer_name && <p className="text-xs text-error mt-1">{errors.customer_name.message}</p>}
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1.5 block">Phone *</label>
-                  <input {...register("customer_phone")} className="w-full px-3 py-2.5 text-sm rounded-xl border border-outline-variant/30 bg-surface-container-low text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" />
-                  {errors.customer_phone && <p className="text-xs text-error mt-1">{errors.customer_phone.message}</p>}
-                </div>
-              </div>
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1.5 block">Title / Purpose *</label>
-                <input {...register("title")} placeholder="e.g. Dental Checkup" className="w-full px-3 py-2.5 text-sm rounded-xl border border-outline-variant/30 bg-surface-container-low text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" />
-                {errors.title && <p className="text-xs text-error mt-1">{errors.title.message}</p>}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1.5 block">Date & Time *</label>
-                  <input {...register("scheduled_at")} type="datetime-local" className="w-full px-3 py-2.5 text-sm rounded-xl border border-outline-variant/30 bg-surface-container-low text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" />
-                  {errors.scheduled_at && <p className="text-xs text-error mt-1">{errors.scheduled_at.message}</p>}
-                </div>
-                <div>
-                  <label className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1.5 block">Duration (min)</label>
-                  <input {...register("duration_minutes")} type="number" min={5} className="w-full px-3 py-2.5 text-sm rounded-xl border border-outline-variant/30 bg-surface-container-low text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" />
-                </div>
-              </div>
-              {(createMut.isError || updateMut.isError) && (
-                <p className="text-sm text-error">Something went wrong. Please try again.</p>
-              )}
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => { setOpen(false); setEditing(null); }}
-                  className="flex-1 py-3 rounded-xl border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container transition-all text-sm font-bold">
-                  Cancel
-                </button>
-                <button type="submit" disabled={isSubmitting}
-                  className="flex-1 py-3 rounded-xl bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold hover:opacity-90 disabled:opacity-60 transition-all text-sm">
-                  {isSubmitting ? "Saving..." : editing ? "Update" : "Book Appointment"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Pro Tip */}
-      {showProTip && (
-        <div className="fixed bottom-6 right-6 max-w-xs bg-surface-container-high rounded-2xl p-4 border border-outline-variant/20 shadow-2xl z-40">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-3">
-              <span className="material-symbols-outlined text-primary text-2xl flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-              <div>
-                <p className="font-bold text-on-surface text-sm">Pro Tip</p>
-                <p className="text-xs text-on-surface-variant mt-1">Connect Google Calendar to auto-sync appointments in real-time.</p>
-              </div>
-            </div>
-            <button onClick={() => setShowProTip(false)} className="text-on-surface-variant hover:text-on-surface transition-colors flex-shrink-0">
-              <span className="material-symbols-outlined text-lg">close</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
