@@ -50,4 +50,4 @@ app.include_router(exotel_router, prefix="/webhooks/exotel", tags=["Exotel"])
 
 @app.get("/health", tags=["System"])
 async def health_check():
-    return {"status": "ok", "version": settings.APP_VERSION}
+    return {"status": "ok", "version": settings.APP_VERSION, "commit": "faee797"}
