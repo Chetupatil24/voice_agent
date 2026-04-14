@@ -10,6 +10,7 @@ class Token(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+    business_name: str | None = None
 
 
 class AccessToken(BaseModel):
@@ -52,6 +53,25 @@ class UserResponse(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+# ── Public sign-up (creates tenant + admin user in one step) ──────────────────
+class SignupRequest(BaseModel):
+    business_name: str
+    email: EmailStr
+    password: str
+    phone: str | None = None
+    industry: str | None = None
+    full_name: str | None = None
+
+
+class SignupResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    tenant_id: uuid.UUID
+    user_id: uuid.UUID
+    business_name: str
 
 
 # ── Owner (super-admin) schemas ───────────────────────────────────────────────

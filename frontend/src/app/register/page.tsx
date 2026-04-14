@@ -17,14 +17,16 @@ export default function RegisterPage() {
     if (form.password !== form.confirm) { setError("Passwords don't match."); return; }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/signup`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({ business_name:form.business_name, industry:form.industry, phone:form.phone, email:form.email, password:form.password }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.detail || "Registration failed."); return; }
-      router.push("/success");
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("business_name", data.business_name || "");
+      router.push("/dashboard");
     } catch { setError("Connection failed."); }
     finally { setLoading(false); }
   }

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Create demo tenant + user accounts for VaaniAI.
+Create two demo tenant accounts for VaaniAI testing.
 
 Usage:
+  python scripts/create_demo_accounts.py
   python scripts/create_demo_accounts.py --api https://voiceagent-production-94e5.up.railway.app
 
-Required env vars (or pass --api flag):
-  VAANI_API_URL  - Backend base URL
+Accounts created:
+  Tenant 001 — Demo Healthcare Clinic
+  Tenant 002 — Demo Restaurant
 """
 import argparse
 import json
@@ -16,17 +18,17 @@ import urllib.error
 
 DEMO_ACCOUNTS = [
     {
-        "business_name": "Demo Dental Clinic",
-        "email": "demo@dental.vaaniai.com",
-        "password": "Demo@1234",
-        "phone": "+919876543210",
+        "business_name": "Demo Clinic 001",
+        "email": "tenant001@vaaniai.com",
+        "password": "Demo@001#VaaniAI",
+        "phone": "+919800000001",
         "industry": "healthcare",
     },
     {
-        "business_name": "Demo Restaurant",
-        "email": "demo@restaurant.vaaniai.com",
-        "password": "Demo@1234",
-        "phone": "+919876543211",
+        "business_name": "Demo Restaurant 002",
+        "email": "tenant002@vaaniai.com",
+        "password": "Demo@002#VaaniAI",
+        "phone": "+919800000002",
         "industry": "food_beverage",
     },
 ]
@@ -60,22 +62,45 @@ def main() -> None:
     base = args.api.rstrip("/")
 
     print(f"Target API: {base}\n")
+    print("=" * 55)
+    print("VaaniAI Demo Tenant Accounts")
+    print("=" * 55)
 
+    created = []
     for account in DEMO_ACCOUNTS:
-        print(f"Creating: {account['business_name']} ({account['email']})")
+        print(f"\nCreating: {account['business_name']}")
         try:
-            result = post(f"{base}/api/v1/auth/register", account)
-            tenant_id = result.get("tenant_id") or result.get("id", "N/A")
-            print(f"  ✓ Created  tenant_id={tenant_id}")
-            print(f"  Email:     {account['email']}")
-            print(f"  Password:  {account['password']}")
-            print()
+            result = post(f"{base}/api/v1/auth/signup", account)
+            tenant_id = result.get("tenant_id", "N/A")
+            created.append({**account, "tenant_id": tenant_id})
+            print(f"  ✓ Success  tenant_id={tenant_id}")
+        except urllib.error.HTTPError as e:
+            # 409 = already exists, treat as success
+            if e.code == 409:
+                print(f"  ✓ Already exists (skipped)")
+            else:
+                print(f"  ✗ Failed")
+                sys.exit(1)
         except Exception as exc:
-            print(f"  ✗ Failed: {exc}\n")
+            print(f"  ✗ Failed: {exc}")
             sys.exit(1)
 
-    print("Done. Save these credentials for demo purposes.")
+    print("\n" + "=" * 55)
+    print("DEMO LOGIN CREDENTIALS")
+    print("=" * 55)
+    for a in DEMO_ACCOUNTS:
+        print(f"\n  {a['business_name']}")
+        print(f"  Login URL : {base.replace('https://','')}/login")
+        print(f"  Email     : {a['email']}")
+        print(f"  Password  : {a['password']}")
+    print("\n  Owner Admin Portal")
+    print(f"  Login URL : {base.replace('https://','')}/owner-login")
+    print(f"  Email     : chetan24@vaaniai.com")
+    print(f"  Password  : ChetuR@2423")
+    print("\n" + "=" * 55)
+    print("Save these credentials!")
 
 
 if __name__ == "__main__":
     main()
+

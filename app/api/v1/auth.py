@@ -13,11 +13,14 @@ from app.schemas.auth import (
     LoginRequest,
     OwnerLoginRequest,
     RefreshRequest,
+    SignupRequest,
+    SignupResponse,
     Token,
     UserCreate,
     UserResponse,
 )
-from app.services.tenant_service import get_tenant
+from app.services.tenant_service import get_tenant, create_tenant as svc_create_tenant
+from app.schemas.tenant import TenantCreate
 from app.utils.auth import (
     create_access_token,
     create_refresh_token,
@@ -75,6 +78,64 @@ async def _clear_rate_limit(key: str) -> None:
         await client.aclose()
     except Exception:
         pass
+
+
+# ---------------------------------------------------------------------------
+# Public sign-up — creates tenant + admin user in one step
+# ---------------------------------------------------------------------------
+
+@router.post("/signup", response_model=SignupResponse, status_code=201)
+async def signup(
+    data: SignupRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Public registration endpoint.
+    Creates a new Tenant and its first admin User, then returns tokens so the
+    user is immediately logged in.
+    """
+    # Check email uniqueness
+    existing = await db.execute(select(User).where(User.email == data.email))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Email already registered")
+
+    # Create tenant
+    tenant = await svc_create_tenant(
+        TenantCreate(
+            name=data.business_name,
+            email=data.email,
+            phone=data.phone,
+            industry=data.industry,
+            plan="starter",
+        ),
+        db,
+    )
+
+    # Create admin user
+    user = User(
+        tenant_id=tenant.id,
+        email=data.email,
+        hashed_password=hash_password(data.password),
+        full_name=data.full_name,
+        role="admin",
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+
+    payload = {
+        "sub": str(user.id),
+        "tenant_id": str(tenant.id),
+        "email": user.email,
+        "role": user.role,
+    }
+    return SignupResponse(
+        access_token=create_access_token(payload),
+        refresh_token=create_refresh_token(payload),
+        tenant_id=tenant.id,
+        user_id=user.id,
+        business_name=tenant.name,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -150,9 +211,11 @@ async def login(
         "email": user.email,
         "role": user.role,
     }
+    tenant = await get_tenant(user.tenant_id, db)
     return Token(
         access_token=create_access_token(payload),
         refresh_token=create_refresh_token(payload),
+        business_name=tenant.name if tenant else None,
     )
 
 
