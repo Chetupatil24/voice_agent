@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -19,9 +20,15 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      router.replace("/login");
+    }
+  }, [router]);
+
   const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("tenant_id");
+    localStorage.removeItem("token");
+    localStorage.removeItem("business_name");
     router.replace("/login");
   };
 
