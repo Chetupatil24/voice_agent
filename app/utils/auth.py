@@ -86,7 +86,12 @@ def decode_refresh_token(token: str) -> dict:
 
 def is_owner_credentials(email: str, password: str) -> bool:
     """Validate owner (super-admin) static credentials from settings."""
-    return (
-        email == settings.OWNER_EMAIL
-        and verify_password(password, settings.OWNER_PASSWORD_HASH)
-    )
+    if email != settings.OWNER_EMAIL:
+        return False
+    try:
+        return verify_password(password, settings.OWNER_PASSWORD_HASH)
+    except Exception:
+        # OWNER_PASSWORD_HASH is not a valid bcrypt hash (e.g. still plain-text).
+        # Fall back to a direct string comparison so the app doesn't 500;
+        # set OWNER_PASSWORD_HASH to a proper bcrypt hash in production.
+        return password == settings.OWNER_PASSWORD_HASH

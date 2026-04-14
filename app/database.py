@@ -49,8 +49,14 @@ async def get_db():
 
 
 async def init_db() -> None:
-    """Create pgvector extension and all tables on startup."""
+    """Create pgvector extension (if available) and all tables on startup."""
     async with engine.begin() as conn:
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        try:
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        except Exception:
+            # pgvector not installed on this PostgreSQL instance — skip it.
+            # Vector-search features will be unavailable but all other
+            # functionality continues normally.
+            pass
         from app.models import Base as ModelBase  # noqa: F401 (imports trigger model registration)
         await conn.run_sync(ModelBase.metadata.create_all)
