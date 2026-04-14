@@ -1,0 +1,41 @@
+# ── Version control ───────────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Secrets — never bake into image ──────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Frontend — not needed for Python backend image ────────────────────────────
+frontend/
+
+# ── Python cache / build artefacts ───────────────────────────────────────────
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# ── Test / coverage artefacts ─────────────────────────────────────────────────
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# ── IDE / OS ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ── Uploads / local data ──────────────────────────────────────────────────────
+uploads/
+*.log
