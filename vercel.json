@@ -1,3 +1,5 @@
 {
-  "rootDirectory": "frontend"
+  "github": {
+    "enabled": false
+  }
 }
