@@ -17,7 +17,7 @@ export default function RegisterPage() {
     if (form.password !== form.confirm) { setError("Passwords don't match."); return; }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/signup`, {
+      const res = await fetch(`/api/v1/auth/signup`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({ business_name:form.business_name, industry:form.industry, phone:form.phone, email:form.email, password:form.password }),
