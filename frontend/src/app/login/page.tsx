@@ -163,6 +163,10 @@ export default function LoginPage() {
             New to VaaniAI?{" "}
             <a href="/register" className="text-primary font-semibold hover:underline">Create an account</a>
           </p>
+          <p className="text-center text-xs text-on-surface-variant/50 mt-3">
+            Platform Owner?{" "}
+            <a href="/owner-login" className="text-primary hover:underline">Sign in here</a>
+          </p>
         </div>
 
         {/* Language pill */}

@@ -1,4 +1,58 @@
+"use client";
+import { useState } from "react";
+
+const LANG_CONTENT = {
+  en: {
+    nav: ["English", "Hindi", "Kannada"],
+    hero1: "Your Business Answers Every Call.",
+    hero2: "Even at 3 AM.",
+    sub: "Multilingual AI Voice Agents for Indian SMBs. Handle inquiries, book appointments, and close sales in English, Hindi, and Kannada while you sleep.",
+    cta1: "Start Free Trial",
+    cta2: "Watch Demo",
+    demoTitle: "Hear the future of Indian commerce.",
+    demoSub: "Our AI understands dialects, accents, and local nuances. Switch between languages instantly during the call.",
+    pricingTitle: "Transparent Pricing",
+    pricingSub: "Scale your business without scaling your headcount.",
+    finalTitle: "Ready to never miss a lead?",
+    finalSub: "Join 2,000+ Indian businesses automating their front desk with VaaniAI.",
+  },
+  hi: {
+    nav: ["English", "Hindi", "Kannada"],
+    hero1: "आपका व्यवसाय हर कॉल का जवाब देता है।",
+    hero2: "रात 3 बजे भी।",
+    sub: "भारतीय SMBs के लिए बहुभाषी AI वॉइस एजेंट। सोते समय भी हिंदी, अंग्रेजी और कन्नड़ में पूछताछ संभालें, अपॉइंटमेंट बुक करें।",
+    cta1: "निःशुल्क ट्रायल शुरू करें",
+    cta2: "डेमो देखें",
+    demoTitle: "भारतीय व्यापार का भविष्य सुनें।",
+    demoSub: "हमारा AI बोलियों, लहजों और स्थानीय बारीकियों को समझता है। कॉल के दौरान भाषाएं तुरंत बदलें।",
+    pricingTitle: "पारदर्शी मूल्य निर्धारण",
+    pricingSub: "अपनी टीम बढ़ाए बिना अपना व्यवसाय बढ़ाएं।",
+    finalTitle: "कोई भी लीड गंवाने के लिए तैयार हैं?",
+    finalSub: "2,000+ भारतीय व्यवसायों से जुड़ें जो VaaniAI से अपना फ्रंट डेस्क स्वचालित कर रहे हैं।",
+  },
+  kn: {
+    nav: ["English", "Hindi", "Kannada"],
+    hero1: "ನಿಮ್ಮ ವ್ಯವಹಾರ ಪ್ರತಿ ಕರೆಗೆ ಉತ್ತರಿಸುತ್ತದೆ.",
+    hero2: "ರಾತ್ರಿ 3 ಗಂಟೆಗೂ ಸಹ.",
+    sub: "ಭಾರತೀಯ SMB ಗಳಿಗಾಗಿ ಬಹುಭಾಷಾ AI ವಾಯ್ಸ್ ಏಜೆಂಟ್‌ಗಳು. ಕನ್ನಡ, ಹಿಂದಿ ಮತ್ತು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ವಿಚಾರಣೆ ನಿರ್ವಹಿಸಿ.",
+    cta1: "ಉಚಿತ ಪ್ರಯೋಗ ಪ್ರಾರಂಭಿಸಿ",
+    cta2: "ಡೆಮೋ ನೋಡಿ",
+    demoTitle: "ಭಾರತೀಯ ವಾಣಿಜ್ಯದ ಭವಿಷ್ಯ ಕೇಳಿ.",
+    demoSub: "ನಮ್ಮ AI ಉಪಭಾಷೆಗಳು, ಉಚ್ಚಾರಣೆಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುತ್ತದೆ. ಕರೆಯ ಸಮಯದಲ್ಲಿ ತಕ್ಷಣ ಭಾಷೆ ಬದಲಾಯಿಸಿ.",
+    pricingTitle: "ಪಾರದರ್ಶಕ ಬೆಲೆ",
+    pricingSub: "ನಿಮ್ಮ ತಂಡ ಹೆಚ್ಚಿಸದೆ ವ್ಯವಹಾರ ಬೆಳೆಸಿ.",
+    finalTitle: "ಯಾವ ಲೀಡ್ ತಪ್ಪಿಸಿಕೊಳ್ಳಲು ಸಿದ್ಧರಿದ್ದೀರಾ?",
+    finalSub: "2,000+ ಭಾರತೀಯ ವ್ಯವಹಾರಗಳು VaaniAI ನೊಂದಿಗೆ ಸ್ವಯಂಚಾಲಿತಗೊಳಿಸುತ್ತಿವೆ.",
+  },
+};
+
+type Lang = keyof typeof LANG_CONTENT;
+
 export default function LandingPage() {
+  const [lang, setLang] = useState<Lang>("en");
+  const c = LANG_CONTENT[lang];
+  const langKeys: Lang[] = ["en", "hi", "kn"];
+
   return (
     <div className="antialiased overflow-x-hidden">
       {/* TopNav */}
@@ -6,9 +60,17 @@ export default function LandingPage() {
         <div className="flex items-center gap-8">
           <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-container bg-clip-text text-transparent font-headline tracking-tight">VaaniAI</span>
           <nav className="hidden md:flex gap-6 items-center">
-            <a className="text-primary border-b-2 border-primary pb-1 font-headline text-sm font-medium" href="#">English</a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-medium" href="#">Hindi</a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-medium" href="#">Kannada</a>
+            {langKeys.map((key, i) => (
+              <button
+                key={key}
+                onClick={() => setLang(key)}
+                className={lang === key
+                  ? "text-primary border-b-2 border-primary pb-1 font-headline text-sm font-medium"
+                  : "text-on-surface-variant hover:text-primary transition-colors font-headline text-sm font-medium"}
+              >
+                {["English", "Hindi", "Kannada"][i]}
+              </button>
+            ))}
           </nav>
         </div>
         <div className="flex items-center gap-4">
@@ -27,15 +89,15 @@ export default function LandingPage() {
               <span className="text-[10px] font-bold tracking-[0.1em] uppercase text-on-surface-variant">Built for India&apos;s 63M+ SMBs</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-headline font-bold text-on-surface leading-tight mb-6 tracking-tight">
-              Your Business Answers Every Call.{" "}<br />
-              <span className="bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent">Even at 3 AM.</span>
+              {c.hero1}{" "}<br />
+              <span className="bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent">{c.hero2}</span>
             </h1>
             <p className="text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-              Multilingual AI Voice Agents for Indian SMBs. Handle inquiries, book appointments, and close sales in English, Hindi, and Kannada while you sleep.
+              {c.sub}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a href="/register" className="px-8 py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all">Start Free Trial</a>
-              <button className="px-8 py-4 bg-surface-container text-on-surface font-semibold rounded-xl border border-outline-variant/30 hover:bg-surface-container-high transition-all">Watch Demo</button>
+              <a href="/register" className="px-8 py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all">{c.cta1}</a>
+              <button className="px-8 py-4 bg-surface-container text-on-surface font-semibold rounded-xl border border-outline-variant/30 hover:bg-surface-container-high transition-all">{c.cta2}</button>
             </div>
           </div>
           <div className="relative mt-20 w-full max-w-6xl px-6">
@@ -75,8 +137,8 @@ export default function LandingPage() {
         <section className="py-24 bg-background relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl md:text-5xl font-headline font-bold text-on-surface mb-6 leading-tight">Hear the future of<br />Indian commerce.</h2>
-              <p className="text-on-surface-variant text-lg mb-8 leading-relaxed">Our AI understands dialects, accents, and local nuances. Switch between languages instantly during the call.</p>
+              <h2 className="text-4xl md:text-5xl font-headline font-bold text-on-surface mb-6 leading-tight">{c.demoTitle}</h2>
+              <p className="text-on-surface-variant text-lg mb-8 leading-relaxed">{c.demoSub}</p>
               <div className="space-y-4">
                 <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-container-low border border-primary/20">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><span className="material-symbols-outlined text-primary">translate</span></div>
@@ -123,14 +185,14 @@ export default function LandingPage() {
         <section className="py-24 bg-surface-container-lowest">
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-headline font-bold text-on-surface mb-4">Transparent Pricing</h2>
-              <p className="text-on-surface-variant">Scale your business without scaling your headcount.</p>
+              <h2 className="text-4xl font-headline font-bold text-on-surface mb-4">{c.pricingTitle}</h2>
+              <p className="text-on-surface-variant">{c.pricingSub}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="p-8 rounded-2xl bg-surface-container-low border-t-4 border-primary flex flex-col justify-between hover:bg-surface-container transition-all">
                 <div>
                   <h3 className="text-xl font-bold mb-2">Starter</h3>
-                  <p className="text-3xl font-headline font-bold mb-6">&#8377;2,499<span className="text-sm font-normal text-on-surface-variant">/mo</span></p>
+                  <p className="text-3xl font-headline font-bold mb-6">&#8377;4,999<span className="text-sm font-normal text-on-surface-variant">/mo</span></p>
                   <ul className="space-y-4 mb-8">
                     {["500 Minutes/month","2 Shared Numbers","Basic Appointment Booking"].map(f=>(
                       <li key={f} className="flex items-center gap-3 text-sm text-on-surface-variant"><span className="material-symbols-outlined text-primary text-lg">check_circle</span>{f}</li>
@@ -143,7 +205,7 @@ export default function LandingPage() {
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-on-secondary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">Most Popular</div>
                 <div>
                   <h3 className="text-xl font-bold mb-2">Growth</h3>
-                  <p className="text-3xl font-headline font-bold mb-6">&#8377;7,999<span className="text-sm font-normal text-on-surface-variant">/mo</span></p>
+                  <p className="text-3xl font-headline font-bold mb-6">&#8377;14,999<span className="text-sm font-normal text-on-surface-variant">/mo</span></p>
                   <ul className="space-y-4 mb-8">
                     {["2,000 Minutes/month","Custom Dedicated Number","CRM Integration (HubSpot/Zoho)"].map(f=>(
                       <li key={f} className="flex items-center gap-3 text-sm text-on-surface-variant"><span className="material-symbols-outlined text-secondary text-lg">check_circle</span>{f}</li>
@@ -172,8 +234,8 @@ export default function LandingPage() {
         <section className="py-24 px-6">
           <div className="max-w-5xl mx-auto bg-gradient-to-br from-primary/20 to-secondary/10 rounded-[2rem] p-12 text-center border border-outline-variant/20 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10"><span className="material-symbols-outlined text-[120px]">support_agent</span></div>
-            <h2 className="text-4xl font-headline font-bold mb-6">Ready to never miss a lead?</h2>
-            <p className="text-on-surface-variant text-lg mb-10 max-w-xl mx-auto">Join 2,000+ Indian businesses automating their front desk with VaaniAI.</p>
+            <h2 className="text-4xl font-headline font-bold mb-6">{c.finalTitle}</h2>
+            <p className="text-on-surface-variant text-lg mb-10 max-w-xl mx-auto">{c.finalSub}</p>
             <a href="/register" className="px-10 py-5 bg-on-surface text-surface font-bold rounded-2xl hover:bg-white transition-all hover:scale-105 inline-block">Get Started Free</a>
           </div>
         </section>
