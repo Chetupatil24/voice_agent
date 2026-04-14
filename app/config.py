@@ -15,22 +15,22 @@ class Settings(BaseSettings):
     SERVER_BASE_URL: str = "https://yourdomain.com"
 
     # ── Database ─────────────────────────────────────────────────────────────
-    DATABASE_URL: str = "postgresql+asyncpg://voice_agent:secret@localhost:5432/voice_agent_db"
+    DATABASE_URL: str = "postgresql://postgres:hDZJifedzRGduYxhzNZejOYzbIDrpiNd@postgres.railway.internal:5432/railway"
 
     # ── Redis ────────────────────────────────────────────────────────────────
-    REDIS_URL: str = "redis://localhost:6379/0"
-    CELERY_BROKER_URL: str = "redis://localhost:6379/1"
-    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
+    REDIS_URL: str = "redis://default:zjcyPjCnLZoiozxFLVacgdXgtrDICTsJ@redis.railway.internal:6379"
+    CELERY_BROKER_URL: str = "redis://default:zjcyPjCnLZoiozxFLVacgdXgtrDICTsJ@redis.railway.internal:6379/1"
+    CELERY_RESULT_BACKEND: str = "redis://default:zjcyPjCnLZoiozxFLVacgdXgtrDICTsJ@redis.railway.internal:6379/2"
 
     # ── Auth ─────────────────────────────────────────────────────────────────
-    SECRET_KEY: str = "change-this-to-a-long-random-secret-key"
+    SECRET_KEY: str = "bc09ce2c7e15068c376b0f112646596dcd72b1e9410672f439eafaa1a1c48d0f"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60       # 1 hour
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # ── Owner (platform super-admin) ──────────────────────────────────────────
-    OWNER_EMAIL: str = "owner@vaaniai.com"
-    OWNER_PASSWORD_HASH: str = ""  # bcrypt hash — set via: python -c "from passlib.context import CryptContext; print(CryptContext(['bcrypt']).hash('yourpassword'))"
+    OWNER_EMAIL: str = "chetan24@vaaniai.com"
+    OWNER_PASSWORD_HASH: str = "$2b$12$LExYVBP/LT83/jgv43wMAuQ3jrREpiR7zLVjab8ZDIdsY6XMIesTG"
 
     # ── Anthropic (Claude) ───────────────────────────────────────────────────
     ANTHROPIC_API_KEY: str = ""
