@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.database import init_db
+from app.database import init_db, db_ready
 
 logger = structlog.get_logger()
 
@@ -50,4 +50,9 @@ app.include_router(exotel_router, prefix="/webhooks/exotel", tags=["Exotel"])
 
 @app.get("/health", tags=["System"])
 async def health_check():
-    return {"status": "ok", "version": settings.APP_VERSION, "commit": "faee797"}
+    return {
+        "status": "ok" if db_ready else "degraded",
+        "db": "connected" if db_ready else "unavailable — check DATABASE_URL in Railway service variables",
+        "version": settings.APP_VERSION,
+        "commit": "e0fa9ae",
+    }
